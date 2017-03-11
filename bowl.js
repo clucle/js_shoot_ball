@@ -10,33 +10,58 @@ var turn = 1; // 1 black 2 white
 var egg_array = new Array();
 
 function init(){
-	for (i = 0; i < 10; i++) {
-		for (j = 0; j < 10; j++) {
+	for (i = 0; i < 1; i++) {
+		for (j = 0; j < 2; j++) {
 			egg_array.push(new Egg(200 + (40 * i), 200 + (40 * j), 0));
 		}
 	}
 	
-	egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
+	egg_array[1].addForce(Math.cos(-1), Math.sin(-1), 40);
 
 	runPhysics();
 }
 
 function runPhysics(){
+	var check_meet;
 	for (i = 0; i < egg_array.length; i++) {
 		if (egg_array[i].speed > 0) {
 			egg_array[i].xPos += egg_array[i].xDir * egg_array[i].speed;
 			egg_array[i].yPos += egg_array[i].yDir * egg_array[i].speed;
 			egg_array[i].speed-=0.1; //a = /ug -> 50프레임 /50
 
-			var check_meet = 0;
+			
 			for (j = 0; j < egg_array.length; j++) {
+				check_meet = false;
 				if (j != i) {
 					while (isMeet(egg_array[i].xPos, egg_array[i].yPos,
 							egg_array[j].xPos, egg_array[j].yPos)) {
+						if (!check_meet) check_meet = true;
+						console.log(egg_array[i].yDir);
+						if (egg_array[i].xPos > egg_array[j].xPos) {
+							egg_array[i].xPos = egg_array[i].xPos + Math.abs(egg_array[i].xDir);
+						} else {
+							egg_array[i].xPos = egg_array[i].xPos - Math.abs(egg_array[i].xDir);
+						}
+						if (egg_array[i].yPos > egg_array[j].yPos) {
+							egg_array[i].yPos = egg_array[i].yPos + Math.abs(egg_array[i].yDir);
+						} else {
+							egg_array[i].yPos = egg_array[i].yPos - Math.abs(egg_array[i].yDir);
+						}
+					}
+					
 
-						egg_array[i].xPos = egg_array[i].xPos - egg_array[i].xDir;
-						egg_array[i].yPos = egg_array[i].yPos - egg_array[i].yDir;
-						egg_array[i].speed = 0;
+					if (check_meet) {
+						egg_array[j].xDir = (egg_array[j].xPos - egg_array[i].xPos) / (2 * radius);
+						egg_array[j].yDir = (egg_array[j].yPos - egg_array[i].yPos) / (2 * radius);
+
+						var cos = egg_array[i].xDir * egg_array[j].xDir +
+							egg_array[i].yDir * egg_array[j].yDir;
+
+						egg_array[i].xDir = egg_array[i].xDir - (egg_array[j].xDir) * cos;
+						egg_array[i].yDir = egg_array[i].yDir - (egg_array[j].yDir) * cos;
+
+						egg_array[i].speed = 4;
+						egg_array[j].speed = 4;
 					}
 				}
 			}
