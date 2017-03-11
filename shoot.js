@@ -23,7 +23,9 @@ function init(){
 			egg_array.push(new Egg(200 + (80 * i), 200 + (80 * j), 0));
 		}
 	}
-	
+	// Mouse Event Init
+	c.addEventListener("mousedown", mouseDownListener, false);
+
 	// push using addForce
 	egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
 
@@ -38,26 +40,26 @@ function runPhysics(){
 	for (i = 0; i < egg_array.length; i++) {
 		if (egg_array[i].speed > 0) {
 			// Egg Move
-			egg_array[i].xPos += egg_array[i].xDir * egg_array[i].speed;
-			egg_array[i].yPos += egg_array[i].yDir * egg_array[i].speed;
+			egg_array[i].x_pos += egg_array[i].x_dir * egg_array[i].speed;
+			egg_array[i].y_pos += egg_array[i].y_dir * egg_array[i].speed;
 			egg_array[i].speed -= 0.1; // accelate = ㎍ (friction) -> 50 Frame /50
 
 			
 			for (j = 0; j < egg_array.length; j++) {
 				check_meet = false;
 				if (j != i) {
-					while (isMeet(egg_array[i].xPos, egg_array[i].yPos,
-							egg_array[j].xPos, egg_array[j].yPos)) {
+					while (isMeet(egg_array[i].x_pos, egg_array[i].y_pos,
+							egg_array[j].x_pos, egg_array[j].y_pos)) {
 						if (!check_meet) check_meet = true;
-						if (egg_array[i].xPos > egg_array[j].xPos) {
-							egg_array[i].xPos = egg_array[i].xPos + Math.abs(egg_array[i].xDir);
+						if (egg_array[i].x_pos > egg_array[j].x_pos) {
+							egg_array[i].x_pos = egg_array[i].x_pos + Math.abs(egg_array[i].x_dir);
 						} else {
-							egg_array[i].xPos = egg_array[i].xPos - Math.abs(egg_array[i].xDir);
+							egg_array[i].x_pos = egg_array[i].x_pos - Math.abs(egg_array[i].x_dir);
 						}
-						if (egg_array[i].yPos > egg_array[j].yPos) {
-							egg_array[i].yPos = egg_array[i].yPos + Math.abs(egg_array[i].yDir);
+						if (egg_array[i].y_pos > egg_array[j].y_pos) {
+							egg_array[i].y_pos = egg_array[i].y_pos + Math.abs(egg_array[i].y_dir);
 						} else {
-							egg_array[i].yPos = egg_array[i].yPos - Math.abs(egg_array[i].yDir);
+							egg_array[i].y_pos = egg_array[i].y_pos - Math.abs(egg_array[i].y_dir);
 						}
 					}
 					
@@ -67,15 +69,15 @@ function runPhysics(){
 						// When Kiss Other Egg's direction between origin Degree = B
 						// Calculate Two Egg's direction and speed
 
-						egg_array[j].xDir = (egg_array[j].xPos - egg_array[i].xPos) / (2 * radius);
-						egg_array[j].yDir = (egg_array[j].yPos - egg_array[i].yPos) / (2 * radius);
+						egg_array[j].x_dir = (egg_array[j].x_pos - egg_array[i].x_pos) / (2 * radius);
+						egg_array[j].y_dir = (egg_array[j].y_pos - egg_array[i].y_pos) / (2 * radius);
 
-						var cosB = egg_array[i].xDir * egg_array[j].xDir +
-							egg_array[i].yDir * egg_array[j].yDir;
+						var cosB = egg_array[i].x_dir * egg_array[j].x_dir +
+							egg_array[i].y_dir * egg_array[j].y_dir;
 						var cosA = Math.sqrt(1 - Math.abs(cosB));
 
-						egg_array[i].xDir = egg_array[i].xDir - (egg_array[j].xDir) * cosB;
-						egg_array[i].yDir = egg_array[i].yDir - (egg_array[j].yDir) * cosB;
+						egg_array[i].x_dir = egg_array[i].x_dir - (egg_array[j].x_dir) * cosB;
+						egg_array[i].y_dir = egg_array[i].y_dir - (egg_array[j].y_dir) * cosB;
 
 						egg_array[j].speed = egg_array[i].speed * (1 / (cosA * cosA / cosB + cosB));
 						egg_array[i].speed = egg_array[i].speed * (1 / (cosB * cosB / cosA + cosA));
@@ -133,17 +135,29 @@ function updateBoard(){
 	}
 
 	// board draw point
-	var circleRadius = 3;
+	var circle_radius = 3;
 	for (i = 0; i < 3; i++) { 
 		for (j = 0; j < 3; j++) { 
 			// board circle draw
 			ctx.beginPath();
-			ctx.arc(blank + 3 * 32 + i * 6 * 32, blank + 3 * 32  + j * 6 * 32, circleRadius, 0, 2*Math.PI);
+			ctx.arc(blank + 3 * 32 + i * 6 * 32, blank + 3 * 32  + j * 6 * 32, circle_radius, 0, 2*Math.PI);
 			ctx.fill();
 			ctx.stroke();
 		}
 	}
 
+	// Draw Shooting Range
+	if (dragging == true)
+	{
+		ctx.beginPath();
+		ctx.strokeStyle="rgba(255, 255, 255, 0.9)"
+		ctx.fillStyle="rgba(255, 255, 255, 0.6)"
+		ctx.arc(egg_array[drag_index].x_pos, egg_array[drag_index].y_pos, radius * 3, 0, 2*Math.PI);
+		ctx.fill();
+		ctx.stroke();
+	}
+
+	// Draw Egg
 	for (i = 0; i < egg_array.length; i++) {
 		ctx.beginPath();
 		if (egg_array[i].color == 0) {
@@ -154,7 +168,7 @@ function updateBoard(){
 			ctx.fillStyle="#FFFFFF";
 		}
 
-		ctx.arc(egg_array[i].xPos, egg_array[i].yPos, radius, 0, 2*Math.PI);
+		ctx.arc(egg_array[i].x_pos, egg_array[i].y_pos, radius, 0, 2*Math.PI);
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -170,33 +184,66 @@ function getMousePos(canvas, evt) {
 	};
 }
 
-c.addEventListener('mousemove', function(evt) {
-	var mousePos = getMousePos(c, evt);
-}, false);
+/* Drag and Drop */
+var dragging = false;
+var drag_index;
+var drag_x;
+var drag_y;
 
-c.addEventListener('mousedown', function(evt) {
-	var mousePos = getMousePos(c, evt);
-}, false);
+function mouseDownListener(evt) {
+    var canvas_blank = c.getBoundingClientRect();
+    var canvas_x = (evt.clientX - canvas_blank.left) * (c.width / canvas_blank.width);
+    var canvas_y = (evt.clientY - canvas_blank.top) * (c.height / canvas_blank.height);
+    var i;
 
+    for (i = 0; i < egg_array.length; i++) {
+        if (egg_array[i].HitTest(canvas_x, canvas_y)) {
+            dragging = true;
+            drag_index = i;
+        }
+    }
+    if (dragging) {
+        window.addEventListener("mousemove", mouseMoveListener, false);
+        window.addEventListener("mouseup", mouseUpListener, false);
+    }
+}
 
+function mouseMoveListener(evt) {
+    var canvas_blank = c.getBoundingClientRect();
+    var canvas_x = (evt.clientX - canvas_blank.left) * (c.width / canvas_blank.width);
+    var canvas_y = (evt.clientY - canvas_blank.top) * (c.height / canvas_blank.height);
+    drag_x = egg_array[drag_index].x_pos - canvas_x;
+    drag_y = egg_array[drag_index].y_pos - canvas_y;
+}
+function mouseUpListener(evt) {
+    window.removeEventListener("mousemove", mouseMoveListener, false);
+    window.removeEventListener("mouseup", mouseUpListener, false);
+    dragging = false;
+}
+
+/* Drag and Drop End */
 // Egg Class
-function Egg(xPos, yPos, color) {
-	this.xPos = xPos;
-	this.yPos = yPos;
+function Egg(x_pos, y_pos, color) {
+	this.x_pos = x_pos;
+	this.y_pos = y_pos;
 	this.color = color;
-	this.xDir = 0;
-	this.yDir = 0;
+	this.x_dir = 0;
+	this.y_dir = 0;
 	this.speed = 0;
 	this.initspeed = 0;
 }
 
-Egg.prototype.addForce = function(xDir, yDir, force) {
-	this.xDir = xDir;
-	this.yDir = yDir;
+Egg.prototype.addForce = function(x_dir, y_dir, force) {
+	this.x_dir = x_dir;
+	this.y_dir = y_dir;
 	this.speed = Math.sqrt(2 * force);
 	return true;
 };
 
+Egg.prototype.HitTest = function(cx, cy) {
+    return ((cx > this.x_pos - radius) && (cx < this.x_pos + radius)
+        && (cy > this.y_pos - radius) && (cy < this.y_pos + radius));
+}
 
 init();
 updateBoard();
