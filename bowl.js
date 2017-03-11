@@ -10,10 +10,13 @@ var turn = 1; // 1 black 2 white
 var egg_array = new Array();
 
 function init(){
-	egg_array.push(new Egg(200, 200, 0));
-	egg_array.push(new Egg(400, 200, 1));
-
-	egg_array[0].addForce(1, 0, 40);
+	for (i = 0; i < 10; i++) {
+		for (j = 0; j < 10; j++) {
+			egg_array.push(new Egg(200 + (40 * i), 200 + (40 * j), 0));
+		}
+	}
+	
+	egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
 
 	runPhysics();
 }
@@ -25,11 +28,15 @@ function runPhysics(){
 			egg_array[i].yPos += egg_array[i].yDir * egg_array[i].speed;
 			egg_array[i].speed-=0.1; //a = /ug -> 50프레임 /50
 
+			var check_meet = 0;
 			for (j = 0; j < egg_array.length; j++) {
 				if (j != i) {
-					if (isMeet(egg_array[i].xPos, egg_array[i].yPos,
-							egg_array[j].xPos, egg_array.yPos)) {
+					while (isMeet(egg_array[i].xPos, egg_array[i].yPos,
+							egg_array[j].xPos, egg_array[j].yPos)) {
 
+						egg_array[i].xPos = egg_array[i].xPos - egg_array[i].xDir;
+						egg_array[i].yPos = egg_array[i].yPos - egg_array[i].yDir;
+						egg_array[i].speed = 0;
 					}
 				}
 			}
@@ -43,7 +50,11 @@ function runPhysics(){
 }
 
 function isMeet(x1, y1, x2, y2) {
-	
+	var distance = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+	if (distance <= radius * 2) {
+		return true;
+	}
+	return false;
 }
 
 function updateBoard(){
