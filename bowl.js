@@ -1,33 +1,46 @@
+// bowling (physics test)
+// Made by clucle 2017
+
+/* Canvas Setting */
 var c = document.getElementById("board");
 var ctx = c.getContext("2d");
 var width = 600;
 var height = 600;
+
+/* Board Setting */
+
+// Egg's radius
 var radius = 14;
+// Board Line distance (horizontal, vertical)
 var blank = 12;
-var turn = 1; // 1 black 2 white
-
-
+// Egg's Array
 var egg_array = new Array();
 
 function init(){
-	for (i = 0; i < 20; i++) {
-		for (j = 0; j < 20; j++) {
+	// Init Eggs (Spawn)
+	for (i = 0; i < 5; i++) {
+		for (j = 0; j < 5; j++) {
 			egg_array.push(new Egg(200 + (80 * i), 200 + (80 * j), 0));
 		}
 	}
 	
+	// push using addForce
 	egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
 
+	// when push call runPhysics
 	runPhysics();
 }
 
 function runPhysics(){
+	// check_meet use for checking kiss Eggs
 	var check_meet;
+
 	for (i = 0; i < egg_array.length; i++) {
 		if (egg_array[i].speed > 0) {
+			// Egg Move
 			egg_array[i].xPos += egg_array[i].xDir * egg_array[i].speed;
 			egg_array[i].yPos += egg_array[i].yDir * egg_array[i].speed;
-			egg_array[i].speed-=0.1; //a = /ug -> 50프레임 /50
+			egg_array[i].speed -= 0.1; // accelate = ㎍ (friction) -> 50 Frame /50
 
 			
 			for (j = 0; j < egg_array.length; j++) {
@@ -50,11 +63,12 @@ function runPhysics(){
 					
 
 					if (check_meet) {
+						// When Kiss Break direction Degree = A
+						// When Kiss Other Egg's direction between origin Degree = B
+						// Calculate Two Egg's direction and speed
+
 						egg_array[j].xDir = (egg_array[j].xPos - egg_array[i].xPos) / (2 * radius);
 						egg_array[j].yDir = (egg_array[j].yPos - egg_array[i].yPos) / (2 * radius);
-
-						// 충돌시 꺽인 방향의 각도 A
-						// 충돌시 부딪힌 객체의 원래 방향과의 각도 B
 
 						var cosB = egg_array[i].xDir * egg_array[j].xDir +
 							egg_array[i].yDir * egg_array[j].yDir;
@@ -62,8 +76,6 @@ function runPhysics(){
 
 						egg_array[i].xDir = egg_array[i].xDir - (egg_array[j].xDir) * cosB;
 						egg_array[i].yDir = egg_array[i].yDir - (egg_array[j].yDir) * cosB;
-
-
 
 						egg_array[j].speed = egg_array[i].speed * (1 / (cosA * cosA / cosB + cosB));
 						egg_array[i].speed = egg_array[i].speed * (1 / (cosB * cosB / cosA + cosA));
@@ -74,7 +86,7 @@ function runPhysics(){
 		}
 	}
 
-
+	// If Egg have Energy Run Again
 	var check_remain_energy = false;
 	for (i = 0; i < egg_array.length; i++) {
 		if (egg_array[i].speed > 0) {
@@ -88,6 +100,7 @@ function runPhysics(){
 	
 }
 
+// Check is Meet
 function isMeet(x1, y1, x2, y2) {
 	var distance = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 	if (distance <= radius * 2) {
@@ -96,6 +109,7 @@ function isMeet(x1, y1, x2, y2) {
 	return false;
 }
 
+// Canvas Loop
 function updateBoard(){
 	// board fill color
 	ctx.fillStyle="#ffcc66";
@@ -165,6 +179,7 @@ c.addEventListener('mousedown', function(evt) {
 }, false);
 
 
+// Egg Class
 function Egg(xPos, yPos, color) {
 	this.xPos = xPos;
 	this.yPos = yPos;
