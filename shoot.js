@@ -18,19 +18,19 @@ var egg_array = new Array();
 
 function init(){
 	// Init Eggs (Spawn)
-	for (i = 0; i < 5; i++) {
-		for (j = 0; j < 5; j++) {
-			egg_array.push(new Egg(200 + (80 * i), 200 + (80 * j), 0));
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			egg_array.push(new Egg(76 + (2 * 32 * i), 76 + (2 * 32 * j), 0));
 		}
 	}
 	// Mouse Event Init
 	c.addEventListener("mousedown", mouseDownListener, false);
 
 	// push using addForce
-	egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
+	//egg_array[0].addForce(Math.cos(1), Math.sin(1), 40);
 
 	// when push call runPhysics
-	runPhysics();
+	//runPhysics();
 }
 
 function runPhysics(){
@@ -68,13 +68,22 @@ function runPhysics(){
 						// When Kiss Break direction Degree = A
 						// When Kiss Other Egg's direction between origin Degree = B
 						// Calculate Two Egg's direction and speed
+						var kiss_dir_x = (egg_array[j].x_pos - egg_array[i].x_pos);
+						var kiss_dir_y = (egg_array[j].y_pos - egg_array[i].y_pos);
+						var distance = Math.sqrt(kiss_dir_x * kiss_dir_x + kiss_dir_y * kiss_dir_y);
 
-						egg_array[j].x_dir = (egg_array[j].x_pos - egg_array[i].x_pos) / (2 * radius);
-						egg_array[j].y_dir = (egg_array[j].y_pos - egg_array[i].y_pos) / (2 * radius);
+						egg_array[j].x_dir = kiss_dir_x / distance;
+						egg_array[j].y_dir = kiss_dir_y / distance;
 
-						var cosB = egg_array[i].x_dir * egg_array[j].x_dir +
-							egg_array[i].y_dir * egg_array[j].y_dir;
+
+						var cosB = (egg_array[i].x_dir * egg_array[j].x_dir +
+							egg_array[i].y_dir * egg_array[j].y_dir);
 						var cosA = Math.sqrt(1 - Math.abs(cosB));
+
+						if (cosA < 0.0001 && cosA > 0) cosA = 0.0001;
+						if (cosA > -0.0001 && cosA < 0) cosA = -0.0001;
+						if (cosB < 0.0001 && cosB > 0) cosB = 0.0001;
+						if (cosB > -0.0001 && cosB < 0) cosB = -0.0001;
 
 						egg_array[i].x_dir = egg_array[i].x_dir - (egg_array[j].x_dir) * cosB;
 						egg_array[i].y_dir = egg_array[i].y_dir - (egg_array[j].y_dir) * cosB;
@@ -155,6 +164,12 @@ function updateBoard(){
 		ctx.arc(egg_array[drag_index].x_pos, egg_array[drag_index].y_pos, radius * 3, 0, 2*Math.PI);
 		ctx.fill();
 		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(egg_array[drag_index].x_pos - drag_x, egg_array[drag_index].y_pos - drag_y);
+		ctx.lineTo(egg_array[drag_index].x_pos, egg_array[drag_index].y_pos);
+		ctx.stroke();
+
 	}
 
 	// Draw Egg
@@ -215,13 +230,25 @@ function mouseMoveListener(evt) {
     drag_x = egg_array[drag_index].x_pos - canvas_x;
     drag_y = egg_array[drag_index].y_pos - canvas_y;
 }
+
 function mouseUpListener(evt) {
     window.removeEventListener("mousemove", mouseMoveListener, false);
     window.removeEventListener("mouseup", mouseUpListener, false);
     dragging = false;
-}
+    var distance = Math.sqrt(drag_x * drag_x + drag_y * drag_y);
+    var x_dir = drag_x / distance;
+    var y_dir = drag_y / distance;
+    if (distance > 3 * radius) {
+		// push using addForce
+		egg_array[drag_index].addForce(x_dir, y_dir, distance / 5);
 
+		// when push call runPhysics
+		runPhysics();
+    }
+}
 /* Drag and Drop End */
+
+
 // Egg Class
 function Egg(x_pos, y_pos, color) {
 	this.x_pos = x_pos;
