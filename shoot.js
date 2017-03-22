@@ -214,6 +214,8 @@ function mouseDownListener(evt) {
     for (i = 0; i < egg_array.length; i++) {
         if (egg_array[i].HitTest(canvas_x, canvas_y)) {
             dragging = true;
+            drag_x = egg_array[i].x_pos - canvas_x;
+    		drag_y = egg_array[i].y_pos - canvas_y;
             drag_index = i;
         }
     }
@@ -242,6 +244,7 @@ function mouseUpListener(evt) {
 		// push using addForce
 		egg_array[drag_index].addForce(x_dir, y_dir, distance / 5);
 
+		distance = 0;
 		// when push call runPhysics
 		runPhysics();
     }
